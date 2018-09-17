@@ -2,7 +2,8 @@ class Api::ItemsController < ApiController
   before_action :check_auth
 
   def create
-    item = Item.new(item_params)
+    list = List.find(params[:list_id])
+    item = list.items.build(item_params)
     item.user = current_user
 
     if item.save
@@ -12,10 +13,19 @@ class Api::ItemsController < ApiController
     end
   end
 
+  def update
+    item = Item.find(params[:id])
+    if item.update(item_params)
+      render json: item
+    else
+      render json: { errors: item.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def item_params
-    params.require(:item).permit(:title, :list, :user)
+    params.require(:item).permit(:title, :list, :user, :completed)
   end
 
 end
